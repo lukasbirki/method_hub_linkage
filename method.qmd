@@ -15,6 +15,9 @@ csl: apa.csl
 format:
   html: default
   ipynb: default
+collapse-callout:
+  all: true
+
 ---
 
 ```{r}
@@ -42,6 +45,7 @@ The following R packages are required:
 #| message: false
 require(tidyverse)
 require(WikidataQueryServiceR)
+require(DT)
 ```
 
 ## Duration
@@ -50,15 +54,218 @@ Around 20 min
 
 ## Social Science Usecase(s)
 
-This method has been used in a study to examine geographic representation in a mixed-member system [@birkenmaiertba].
+This method has been used in a study to examine geographic representation in a mixed-member system [@birkenmaierPoliticalGeographyReplication2024].
 
-<!-- From this point on, you can use whatever headings. -->
 
-## Heading1 e.g. data
+# Introduction
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+This tutorial guides computational social scientists through linking geographic entities, specifically places, to their unique identifiers in Wikidata using R. This method enhances geographic data analyses by integrating linked open data sources such as Wikidata.
 
-## Heading2
+# Know the Basics of Wikidata
+
+[Wikidata](https://www.wikidata.org) is a free and open knowledge base that contains structured data for entities such as places, people, and concepts. Each entry in Wikidata, referred to as an item, is assigned a unique identifier called a `QID`. Wikidata supports collaborative data management and is accessible to both humans and machines.
+
+To get a better understanding of wikidata, 
+
+- **Entities:** Consist of items (Q-items), each with a unique QID.
+- **Properties:** Attributes of items, such as location coordinates (P625).
+- **Statements:** Data on an item using properties and values.
+
+
+The [Wikidata Query Service](https://query.wikidata.org/) allows users to execute complex queries on the data stored in Wikidata using SPARQL. This powerful tool provides access to all of Wikidata's data, allowing for detailed and specific searches, including geographic locations, historical data, and much more.
+
+To perform a query, users can write and run SPARQL queries directly in the browser-based interface provided by the query service. In R, we can use the package `WikidataQueryServiceR`[@package], a convenient wrapper for the Wikidata Query Service API.
+For instance, if we want to retrieve the list of the most populated countries in the world, we can execute the following query: 
+
+
+```{r}
+#| label: fetch-wikidata
+#| warning: false
+#| message: false
+
+library(WikidataQueryServiceR)
+
+# Define the SPARQL query
+query <- "
+SELECT ?countryLabel ?population
+WHERE {
+  ?country wdt:P31 wd:Q6256. # Instance of country
+  ?country wdt:P1082 ?population. # Population property
+  SERVICE wikibase:label { bd:serviceParam wikibase:language 'en'. }
+}
+ORDER BY DESC(?population)
+LIMIT 10
+"
+
+# Run the query
+results <- query_wikidata(query)
+
+# View the data
+head(results)
+
+```
+
+
+
+:::{.callout-note collapse='true'}
+### Query Explanation
+
+- first filters entities to include only those entities that contain the property `wdt:P31` ("instance of") for all countries (`wd:Q6256`) as "countries," ensuring only relevant entities are retrieved.
+- then retrieves the population data for each country by including the property `wdt:P1082` ("population").
+- next, it uses the `SELECT` statement to specify the output variables, such as `?countryLabel` for the country's name and `?population` for its population value.
+- finally, the query leverages optional clauses or filters to refine the results further and might include a `SERVICE wikibase:label` block to ensure labels are returned in a specified language (e.g., English).
+:::
+
+
+# Link Entities to Their Unique Identifier in Wikidata
+
+## Dataset Preparation
+
+We start with a toy dataset containing social media posts and potential location mentions. This data usually comes in that format from named-entity recognition (NER).
+
+```{r}
+#| code-fold: TRUE
+
+library(tibble)
+library(dplyr)
+library(DT)
+
+# Sample dataset
+library(tibble)
+
+df_full <- tibble(
+  text = c(
+    "I recently visited Augsburg, and I must say, it's truly a city that values community spirit.",
+    "Berlin is not just our capital; it stands as a testament to resilience and progress.",
+    "You know, I’ve spoken to people across the country, and one thing is clear: they all want change.",
+    "When I was in Nordrhein-Westfalen last week, I saw firsthand the challenges in our infrastructure.",
+    "I’ve heard concerns from folks in Zappendorf, and we need to address their needs urgently.",
+    "I grew up visiting Munich and Berlin often, and both cities show us what true innovation looks like.",
+    "Just last month in Hamburg, I joined a discussion on how we tackle climate change together.",
+    "I’ve talked to families across the nation, and their stories inspire me to work harder every day.",
+    "In Frankfurt, I met with local leaders who are driving our economy forward in remarkable ways.",
+    "When I think of Dresden and Leipzig, I think of their rich history and the vibrant future they’re building.",
+    "I had the honor of addressing Parliament in London; it’s always inspiring to see democracy in action.",
+    "Brussels and Paris remind us that international cooperation is the cornerstone of our success.",
+    "We’ve spoken about many issues, but let me tell you what I heard from people in small towns like yours.",
+    "Cologne has always been a city of hope and opportunity, and it’s time we build on that legacy.",
+    "In Stuttgart last week, I saw how advancements in green energy are transforming communities.",
+    "Düsseldorf and Bonn are examples of what happens when we invest in collaboration and innovation.",
+    "I’ll never forget what someone from my hometown said: 'If you believe in us, we’ll deliver.'",
+    "Vienna is not just a cultural hub; it’s where some of the most important global ideas take shape.",
+    "Zurich and Geneva embody the spirit of international unity and progress that we need today.",
+    "When I walked the streets of Amsterdam, I saw the perfect blend of history and modern vision."
+  ),
+  locations = c(
+    "Augsburg",
+    "Berlin",
+    "",
+    "Nordrhein-Westfalen",
+    "Zappendorf",
+    "Munich, Berlin",
+    "Hamburg",
+    "",
+    "Frankfurt",
+    "Dresden, Leipzig",
+    "London",
+    "Brussels, Paris",
+    "",
+    "Cologne",
+    "Stuttgart",
+    "Düsseldorf, Bonn",
+    "",
+    "Vienna",
+    "Zurich, Geneva",
+    "Amsterdam"
+  )
+)
+
+datatable(
+  df_full,
+  options = list(pageLength = 7, scrollX = TRUE)
+)
+
+```
+
+# Data Linkage of Places
+
+```{r}
+# Extract and clean location names
+df_temp <- df_full |> 
+  separate_rows(locations, sep = ",\\s*") %>%
+  mutate(locations = sub("\\.+$", "", locations)) %>%
+  filter(locations != "")  # Remove empty rows
+
+# Extract unique search terms for creating the ID dataset
+search_terms <- unique(df_temp$locations)
+search_terms
+```
+
+
+```{r}
+id_data <- data.frame('search_term' = character(), 'QID' = character(), stringsAsFactors = FALSE)
+```
+
+```{r}
+# Function to fetch IDs from Wikidata and return as a comma-separated list
+get_wikidata_id <- function(search_term) {
+  query <- sprintf("
+SELECT ?item (COUNT(?sitelink) AS ?sites) WHERE {
+  SERVICE wikibase:mwapi {
+    bd:serviceParam wikibase:api 'EntitySearch' .
+    bd:serviceParam wikibase:endpoint 'www.wikidata.org' .
+    bd:serviceParam mwapi:search '%s' .
+    bd:serviceParam mwapi:language 'de' .
+    ?item wikibase:apiOutputItem mwapi:item.
+  }
+  ?item wdt:P625 ?coordinateLocation. # Ensure it has geographic coordinates
+  ?sitelink schema:about ?item.
+  MINUS {?item wdt:P31 wd:Q4167410.} # Exclude disambiguation pages
+} GROUP BY ?item ORDER BY DESC(?sites) LIMIT 3", search_term)
+  
+  result <- query_wikidata(query)
+  
+  if (nrow(result) > 0) {
+    # Extract the last part of each URL and concatenate into a comma-separated list
+    qid_list <- paste(sub(".*/", "", result$item), collapse = ", ")
+    return(qid_list)
+  } else {
+    return(NA)
+  }
+}
+
+```
+
+```{r}
+#| message: false
+
+# Fetch IDs for missing terms
+# for (term in search_terms[1]) {
+#   print(paste("Processing:", term))
+#   tryCatch({
+#     qid <- get_wikidata_id(term)
+#     id_data <- rbind(id_data, data.frame('search_term' = term, 'QID' = qid, stringsAsFactors = FALSE))
+#   }, error = function(e) {
+#     message("Error processing term: ", term)
+#   })
+#   Sys.sleep(1)  # Pause to prevent API rate limiting
+# }
+# 
+# id_data
+```
+
+| Search Term | Most Likely Match| Actual Place                | QID and Link                                                                                    |
+|-------------|-----------------------------|-----------------------------------------------------------------------------------------------|-------------------|
+| Augsburg    | 1| City of Augsburg (✅)       | [Q2749](https://www.wikidata.org/wiki/Q2749)                                                  |         |
+| Augsburg    | 2 |Aichach-Friedberg           | [Q10415](https://www.wikidata.org/wiki/Q10415)                                                                |
+| Augsburg    | 3| District Augsburg (Landkreis) | [Q10414](https://www.wikidata.org/wiki/Q10414)                                                              |
+
+
+## Quality Controls
+
+### Filtering using Wikidata Properties
+
+
 
 Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
 
