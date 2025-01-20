@@ -7,6 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Lukas Birkenmaier">
+<meta name="author" content="Dylan Paltra">
 
 <title>Linking Entities to Wikidata Database</title>
 <style>
@@ -99,35 +100,6 @@ div.csl-indent {
 <link href="method_files/libs/crosstalk-1.2.1/css/crosstalk.min.css" rel="stylesheet">
 <script src="method_files/libs/crosstalk-1.2.1/js/crosstalk.min.js"></script>
 
-  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
-
-<script type="text/javascript">
-const typesetMath = (el) => {
-  if (window.MathJax) {
-    // MathJax Typeset
-    window.MathJax.typeset([el]);
-  } else if (window.katex) {
-    // KaTeX Render
-    var mathElements = el.getElementsByClassName("math");
-    var macros = [];
-    for (var i = 0; i < mathElements.length; i++) {
-      var texText = mathElements[i].firstChild;
-      if (mathElements[i].tagName == "SPAN") {
-        window.katex.render(texText.data, mathElements[i], {
-          displayMode: mathElements[i].classList.contains('display'),
-          throwOnError: false,
-          macros: macros,
-          fleqn: false
-        });
-      }
-    }
-  }
-}
-window.Quarto = {
-  typesetMath
-};
-</script>
 
 </head>
 
@@ -145,8 +117,8 @@ window.Quarto = {
 
 
 <div class="quarto-title-meta-author">
-  <div class="quarto-title-meta-heading">Author</div>
-  <div class="quarto-title-meta-heading">Affiliation</div>
+  <div class="quarto-title-meta-heading">Authors</div>
+  <div class="quarto-title-meta-heading">Affiliations</div>
   
     <div class="quarto-title-meta-contents">
     <p class="author">Lukas Birkenmaier <a href="mailto:lukas.birkenmaier@outlook.de" class="quarto-title-author-email"><i class="bi bi-envelope"></i></a> <a href="https://orcid.org/0009-0006-1538-0589" class="quarto-title-author-orcid"> <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA2ZpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYwIDYxLjEzNDc3NywgMjAxMC8wMi8xMi0xNzozMjowMCAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDo1N0NEMjA4MDI1MjA2ODExOTk0QzkzNTEzRjZEQTg1NyIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDozM0NDOEJGNEZGNTcxMUUxODdBOEVCODg2RjdCQ0QwOSIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDozM0NDOEJGM0ZGNTcxMUUxODdBOEVCODg2RjdCQ0QwOSIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgQ1M1IE1hY2ludG9zaCI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOkZDN0YxMTc0MDcyMDY4MTE5NUZFRDc5MUM2MUUwNEREIiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOjU3Q0QyMDgwMjUyMDY4MTE5OTRDOTM1MTNGNkRBODU3Ii8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+84NovQAAAR1JREFUeNpiZEADy85ZJgCpeCB2QJM6AMQLo4yOL0AWZETSqACk1gOxAQN+cAGIA4EGPQBxmJA0nwdpjjQ8xqArmczw5tMHXAaALDgP1QMxAGqzAAPxQACqh4ER6uf5MBlkm0X4EGayMfMw/Pr7Bd2gRBZogMFBrv01hisv5jLsv9nLAPIOMnjy8RDDyYctyAbFM2EJbRQw+aAWw/LzVgx7b+cwCHKqMhjJFCBLOzAR6+lXX84xnHjYyqAo5IUizkRCwIENQQckGSDGY4TVgAPEaraQr2a4/24bSuoExcJCfAEJihXkWDj3ZAKy9EJGaEo8T0QSxkjSwORsCAuDQCD+QILmD1A9kECEZgxDaEZhICIzGcIyEyOl2RkgwAAhkmC+eAm0TAAAAABJRU5ErkJggg=="></a></p>
@@ -154,6 +126,14 @@ window.Quarto = {
   <div class="quarto-title-meta-contents">
         <p class="affiliation">
             GESIS Leibniz Institute for the Social Sciences
+          </p>
+      </div>
+    <div class="quarto-title-meta-contents">
+    <p class="author">Dylan Paltra <a href="mailto:dylan.paltra@univie.ac.at" class="quarto-title-author-email"><i class="bi bi-envelope"></i></a> </p>
+  </div>
+  <div class="quarto-title-meta-contents">
+        <p class="affiliation">
+            University of Vienna
           </p>
       </div>
   </div>
@@ -172,16 +152,17 @@ window.Quarto = {
 
 <section id="learning-objectives" class="level2">
 <h2 class="anchored" data-anchor-id="learning-objectives">Learning Objectives</h2>
-<p>By the end of this tutorial, you will be able to</p>
+<p>The tutorial at hand provides a pipeline to extract and annotate geographic locations from any source of text. By combining named entity recognition with automatically querying the Wikidata API it enables computational social scientists to smoothly analyse geographic references.</p>
+<p>By the end of this tutorial, you will be able to:</p>
 <ol type="1">
-<li>Know the basics of Wikidata</li>
+<li>Know the basics of Wikidata and how to query it</li>
 <li>Understand how to link entities, in particular places, to their unique identifier (ID) in the Wikidata database</li>
-<li>Be able to implement further quality controls</li>
+<li>Be able to implement steps to increase the quality of the linkage process</li>
 </ol>
 </section>
 <section id="target-audience" class="level2">
 <h2 class="anchored" data-anchor-id="target-audience">Target audience</h2>
-<p>This tutorial is aimed at beginners with some knowledge in R and basic understandings of API queries (no worries, we will do it together 😉)</p>
+<p>This tutorial is aimed at beginners with some knowledge in R and basic understandings of API queries (no worries, we will do it together 😉).</p>
 </section>
 <section id="setting-up-the-computational-environment" class="level2">
 <h2 class="anchored" data-anchor-id="setting-up-the-computational-environment">Setting up the computational environment</h2>
@@ -189,32 +170,59 @@ window.Quarto = {
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">require</span>(tidyverse)</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">require</span>(WikidataQueryServiceR)</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">require</span>(DT)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">require</span>(DT)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">require</span>(jsonlite)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
-<section id="duration" class="level2">
-<h2 class="anchored" data-anchor-id="duration">Duration</h2>
-<p>Around 20 min</p>
-</section>
-<section id="social-science-usecases" class="level2">
-<h2 class="anchored" data-anchor-id="social-science-usecases">Social Science Usecase(s)</h2>
-<p>This method has been used in a study to examine geographic representation in a mixed-member system <span class="citation" data-cites="birkenmaierPoliticalGeographyReplication2024">(<a href="#ref-birkenmaierPoliticalGeographyReplication2024" role="doc-biblioref">Birkenmaier et al., 2024</a>)</span>.</p>
-</section>
-<section id="introduction" class="level1">
-<h1>Introduction</h1>
-<p>This tutorial guides computational social scientists through linking geographic entities, specifically places, to their unique identifiers in Wikidata using R. This method enhances geographic data analyses by integrating linked open data sources such as Wikidata.</p>
+<section id="duratio" class="level2">
+<h2 class="anchored" data-anchor-id="duratio">Duratio</h2>
+<p>This tutorial guides computational social scientists by linking geographic entities mentioned in texts, specifically places, to their unique identifiers in Wikidata using R.</p>
 </section>
 <section id="know-the-basics-of-wikidata" class="level1">
 <h1>Know the Basics of Wikidata</h1>
-<p><a href="https://www.wikidata.org">Wikidata</a> is a free and open knowledge base that contains structured data for entities such as places, people, and concepts. Each entry in Wikidata, referred to as an item, is assigned a unique identifier called a <code>QID</code>. Wikidata supports collaborative data management and is accessible to both humans and machines.</p>
+<p><a href="https://www.wikidata.org">Wikidata</a> is a free and open knowledge base that provides structured data for entries such as places, people, and concepts, used by Wikimedia projects like Wikipedia and others under the CC0 public domain license. Each entry in Wikidata, referred to as an <em>item</em>, is assigned a unique identifier known as a <code>QID</code>.</p>
+<p>For example, the city of <em>Berlin</em> is represented by the ID <a href="https://www.wikidata.org/wiki/Q64">Q64</a>, while the former German chancellor <em>Angela Merkel</em> is identified with the ID <a href="https://www.wikidata.org/wiki/Q7174">Q7174</a>. These unique identifiers allow seamless open data integration into computational analyses, enriching studies with detailed and reliable metadata.</p>
 <p>To get a better understanding of wikidata,</p>
 <ul>
 <li><strong>Entities:</strong> Consist of items (Q-items), each with a unique QID.</li>
 <li><strong>Properties:</strong> Attributes of items, such as location coordinates (P625).</li>
 <li><strong>Statements:</strong> Data on an item using properties and values.</li>
 </ul>
-<p>The <a href="https://query.wikidata.org/">Wikidata Query Service</a> allows users to execute complex queries on the data stored in Wikidata using SPARQL. This powerful tool provides access to all of Wikidata’s data, allowing for detailed and specific searches, including geographic locations, historical data, and much more.</p>
-<p>To perform a query, users can write and run SPARQL queries directly in the browser-based interface provided by the query service. In R, we can use the package <code>WikidataQueryServiceR</code><span class="citation" data-cites="package">(<a href="#ref-package" role="doc-biblioref">Popov, 2020</a>)</span>, a convenient wrapper for the Wikidata Query Service API. For instance, if we want to retrieve the list of the most populated countries in the world, we can execute the following query:</p>
+<p>The <a href="https://query.wikidata.org/">Wikidata Query Service</a> allows users to execute complex queries on the data stored in Wikidata using SPARQL. Thus, all of the knowledge stored in wikidata can dynamically be extracted and saved using specific searches, including geographic locations, historical data, and much more.</p>
+<p>To perform a query, users can access the Wikidata Query Service API or write and run SPARQL queries directly in the browser-based interface provided by the query service. In R, we can use the package <code>WikidataQueryServiceR</code><span class="citation" data-cites="package">(<a href="#ref-package" role="doc-biblioref">Popov, 2020</a>)</span>, a convenient wrapper for the Wikidata Query Service API. For instance, if we want to retrieve the list of the most populated countries in the world, we can execute the following query:</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Query Explanation
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ul>
+<li><strong>Specify Output Variables</strong>:
+<ul>
+<li>The <code>SELECT</code> statement is used to specify the output variables. In our case we name them <code>?countryLabel</code> for the country’s name and <code>?population</code> for the population value. This statement is always defined before the {}, in which the instance and the entity is defined.</li>
+</ul></li>
+<li><strong>Filter by Instance</strong>:
+<ul>
+<li>In the first part of the query we filter for entities to include only those that contain the property <code>wdt:P31</code> (“instance of”) for all countries (<code>wd:Q6256</code>) as “countries,” ensuring only relevant entities for our case are retrieved.</li>
+</ul></li>
+<li><strong>Retrieve Population Data</strong>:
+<ul>
+<li>The second part retrieves the value of interest, the population data for each country, by including the property <code>wdt:P1082</code> (“population”).</li>
+</ul></li>
+<li><strong>Optional Clauses for Refinement</strong>:
+<ul>
+<li>Finally, we can leverage optional clauses or filters to refine the results further and might include a <code>SERVICE wikibase:label</code> statement to ensure labels are returned in a specified language (e.g., English).</li>
+</ul></li>
+</ul>
+</div>
+</div>
+</div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(WikidataQueryServiceR)</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -247,33 +255,12 @@ window.Quarto = {
 6 Nigeria                     211400708</code></pre>
 </div>
 </div>
-<div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Query Explanation
-</div>
-<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
-</div>
-<div id="callout-1" class="callout-1-contents callout-collapse collapse">
-<div class="callout-body-container callout-body">
-<ul>
-<li>first filters entities to include only those entities that contain the property <code>wdt:P31</code> (“instance of”) for all countries (<code>wd:Q6256</code>) as “countries,” ensuring only relevant entities are retrieved.</li>
-<li>then retrieves the population data for each country by including the property <code>wdt:P1082</code> (“population”).</li>
-<li>next, it uses the <code>SELECT</code> statement to specify the output variables, such as <code>?countryLabel</code> for the country’s name and <code>?population</code> for its population value.</li>
-<li>finally, the query leverages optional clauses or filters to refine the results further and might include a <code>SERVICE wikibase:label</code> block to ensure labels are returned in a specified language (e.g., English).</li>
-</ul>
-</div>
-</div>
-</div>
 </section>
 <section id="link-entities-to-their-unique-identifier-in-wikidata" class="level1">
 <h1>Link Entities to Their Unique Identifier in Wikidata</h1>
 <section id="dataset-preparation" class="level2">
 <h2 class="anchored" data-anchor-id="dataset-preparation">Dataset Preparation</h2>
-<p>We start with a toy dataset containing social media posts and potential location mentions. This data usually comes in that format from named-entity recognition (NER).</p>
+<p>We begin with a sample dataset of social media posts that includes potential location mentions. Typically, we use named-entity recognition (NER) to retrieve data on location mentioning from text. This model predicts the presence of entites in an input text. For an example, see this <a href="https://colab.research.google.com/github/huggingface/notebooks/blob/master/course/en/chapter7/section2_pt.ipynb">Tutorial</a> on Huggingface.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
@@ -284,57 +271,59 @@ Query Explanation
 <span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Sample dataset</span></span>
 <span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tibble)</span>
 <span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>df_full <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">text =</span> <span class="fu">c</span>(</span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    <span class="st">"I recently visited Augsburg, and I must say, it's truly a city that values community spirit."</span>,</span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Berlin is not just our capital; it stands as a testament to resilience and progress."</span>,</span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    <span class="st">"You know, I’ve spoken to people across the country, and one thing is clear: they all want change."</span>,</span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>    <span class="st">"When I was in Nordrhein-Westfalen last week, I saw firsthand the challenges in our infrastructure."</span>,</span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>    <span class="st">"I’ve heard concerns from folks in Zappendorf, and we need to address their needs urgently."</span>,</span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>    <span class="st">"I grew up visiting Munich and Berlin often, and both cities show us what true innovation looks like."</span>,</span>
-<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Just last month in Hamburg, I joined a discussion on how we tackle climate change together."</span>,</span>
-<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>    <span class="st">"I’ve talked to families across the nation, and their stories inspire me to work harder every day."</span>,</span>
-<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>    <span class="st">"In Frankfurt, I met with local leaders who are driving our economy forward in remarkable ways."</span>,</span>
-<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>    <span class="st">"When I think of Dresden and Leipzig, I think of their rich history and the vibrant future they’re building."</span>,</span>
-<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>    <span class="st">"I had the honor of addressing Parliament in London; it’s always inspiring to see democracy in action."</span>,</span>
-<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Brussels and Paris remind us that international cooperation is the cornerstone of our success."</span>,</span>
-<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>    <span class="st">"We’ve spoken about many issues, but let me tell you what I heard from people in small towns like yours."</span>,</span>
-<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Cologne has always been a city of hope and opportunity, and it’s time we build on that legacy."</span>,</span>
-<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>    <span class="st">"In Stuttgart last week, I saw how advancements in green energy are transforming communities."</span>,</span>
-<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Düsseldorf and Bonn are examples of what happens when we invest in collaboration and innovation."</span>,</span>
-<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>    <span class="st">"I’ll never forget what someone from my hometown said: 'If you believe in us, we’ll deliver.'"</span>,</span>
-<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Vienna is not just a cultural hub; it’s where some of the most important global ideas take shape."</span>,</span>
-<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Zurich and Geneva embody the spirit of international unity and progress that we need today."</span>,</span>
-<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>    <span class="st">"When I walked the streets of Amsterdam, I saw the perfect blend of history and modern vision."</span></span>
-<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>  ),</span>
-<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>  <span class="at">locations =</span> <span class="fu">c</span>(</span>
-<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Augsburg"</span>,</span>
-<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Berlin"</span>,</span>
-<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a>    <span class="st">""</span>,</span>
-<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Nordrhein-Westfalen"</span>,</span>
-<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Zappendorf"</span>,</span>
-<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Munich, Berlin"</span>,</span>
-<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Hamburg"</span>,</span>
-<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a>    <span class="st">""</span>,</span>
-<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Frankfurt"</span>,</span>
-<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Dresden, Leipzig"</span>,</span>
-<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a>    <span class="st">"London"</span>,</span>
-<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Brussels, Paris"</span>,</span>
-<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a>    <span class="st">""</span>,</span>
-<span id="cb4-45"><a href="#cb4-45" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Cologne"</span>,</span>
-<span id="cb4-46"><a href="#cb4-46" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Stuttgart"</span>,</span>
-<span id="cb4-47"><a href="#cb4-47" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Düsseldorf, Bonn"</span>,</span>
-<span id="cb4-48"><a href="#cb4-48" aria-hidden="true" tabindex="-1"></a>    <span class="st">""</span>,</span>
-<span id="cb4-49"><a href="#cb4-49" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Vienna"</span>,</span>
-<span id="cb4-50"><a href="#cb4-50" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Zurich, Geneva"</span>,</span>
-<span id="cb4-51"><a href="#cb4-51" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Amsterdam"</span></span>
-<span id="cb4-52"><a href="#cb4-52" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb4-53"><a href="#cb4-53" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb4-54"><a href="#cb4-54" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-55"><a href="#cb4-55" aria-hidden="true" tabindex="-1"></a><span class="fu">datatable</span>(</span>
-<span id="cb4-56"><a href="#cb4-56" aria-hidden="true" tabindex="-1"></a>  df_full,</span>
-<span id="cb4-57"><a href="#cb4-57" aria-hidden="true" tabindex="-1"></a>  <span class="at">options =</span> <span class="fu">list</span>(<span class="at">pageLength =</span> <span class="dv">7</span>, <span class="at">scrollX =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb4-58"><a href="#cb4-58" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="co">#We manually create the toy dataset</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>df_full <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">text =</span> <span class="fu">c</span>(</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    <span class="st">"I recently visited Augsburg, and I must say, it's truly a city that values community spirit."</span>,</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Berlin is not just our capital; it stands as a testament to resilience and progress."</span>,</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>    <span class="st">"You know, I’ve spoken to people across the country, and one thing is clear: they all want change."</span>,</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>    <span class="st">"When I was in Nordrhein-Westfalen last week, I saw firsthand the challenges in our infrastructure."</span>,</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>    <span class="st">"I’ve heard concerns from folks in Zappendorf, and we need to address their needs urgently."</span>,</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>    <span class="st">"I grew up visiting Munich and Berlin often, and both cities show us what true innovation looks like."</span>,</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Just last month in Hamburg, I joined a discussion on how we tackle climate change together."</span>,</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>    <span class="st">"I’ve talked to families across the nation, and their stories inspire me to work harder every day."</span>,</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>    <span class="st">"In Frankfurt, I met with local leaders who are driving our economy forward in remarkable ways."</span>,</span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>    <span class="st">"When I think of Dresden and Leipzig, I think of their rich history and the vibrant future they’re building."</span>,</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>    <span class="st">"I had the honor of addressing Parliament in London; it’s always inspiring to see democracy in action."</span>,</span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Brussels and Paris remind us that international cooperation is the cornerstone of our success."</span>,</span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>    <span class="st">"We’ve spoken about many issues, but let me tell you what I heard from people in small towns like yours."</span>,</span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Cologne has always been a city of hope and opportunity, and it’s time we build on that legacy."</span>,</span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>    <span class="st">"In Stuttgart last week, I saw how advancements in green energy are transforming communities."</span>,</span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Düsseldorf and Bonn are examples of what happens when we invest in collaboration and innovation."</span>,</span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>    <span class="st">"I’ll never forget what someone from my hometown said: 'If you believe in us, we’ll deliver.'"</span>,</span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Vienna is not just a cultural hub; it’s where some of the most important global ideas take shape."</span>,</span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Zurich and Geneva embody the spirit of international unity and progress that we need today."</span>,</span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>    <span class="st">"When I walked the streets of Amsterdam, I saw the perfect blend of history and modern vision."</span></span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a>  <span class="at">locations =</span> <span class="fu">c</span>(</span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Augsburg"</span>,</span>
+<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Berlin"</span>,</span>
+<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a>    <span class="st">""</span>,</span>
+<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Nordrhein-Westfalen"</span>,</span>
+<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Zappendorf"</span>,</span>
+<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Munich, Berlin"</span>,</span>
+<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Hamburg"</span>,</span>
+<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a>    <span class="st">""</span>,</span>
+<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Frankfurt"</span>,</span>
+<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Dresden, Leipzig"</span>,</span>
+<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a>    <span class="st">"London"</span>,</span>
+<span id="cb4-45"><a href="#cb4-45" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Brussels, Paris"</span>,</span>
+<span id="cb4-46"><a href="#cb4-46" aria-hidden="true" tabindex="-1"></a>    <span class="st">""</span>,</span>
+<span id="cb4-47"><a href="#cb4-47" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Cologne"</span>,</span>
+<span id="cb4-48"><a href="#cb4-48" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Stuttgart"</span>,</span>
+<span id="cb4-49"><a href="#cb4-49" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Düsseldorf, Bonn"</span>,</span>
+<span id="cb4-50"><a href="#cb4-50" aria-hidden="true" tabindex="-1"></a>    <span class="st">""</span>,</span>
+<span id="cb4-51"><a href="#cb4-51" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Vienna"</span>,</span>
+<span id="cb4-52"><a href="#cb4-52" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Zurich, Geneva"</span>,</span>
+<span id="cb4-53"><a href="#cb4-53" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Amsterdam"</span></span>
+<span id="cb4-54"><a href="#cb4-54" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb4-55"><a href="#cb4-55" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb4-56"><a href="#cb4-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-57"><a href="#cb4-57" aria-hidden="true" tabindex="-1"></a><span class="fu">datatable</span>(</span>
+<span id="cb4-58"><a href="#cb4-58" aria-hidden="true" tabindex="-1"></a>  df_full,</span>
+<span id="cb4-59"><a href="#cb4-59" aria-hidden="true" tabindex="-1"></a>  <span class="at">options =</span> <span class="fu">list</span>(<span class="at">pageLength =</span> <span class="dv">7</span>, <span class="at">scrollX =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb4-60"><a href="#cb4-60" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
 <div class="datatables html-widget html-fill-item" id="htmlwidget-6b83fdc83e0f31aed667" style="width:100%;height:auto;"></div>
@@ -345,6 +334,7 @@ Query Explanation
 </section>
 <section id="data-linkage-of-places" class="level1">
 <h1>Data Linkage of Places</h1>
+<p>We start by processing the dataset (<code>df_full</code>) to extract and clean location names. The <code>separate_rows()</code> function splits multiple locations listed in one cell into separate rows, while additional transformations remove trailing dots and empty rows. The result is a clean list of location names ready for further processing. From the cleaned dataset (<code>df_temp</code>), we extract a unique list of location names using the <code>unique()</code> function. This ensures that only distinct location names are processed when creating the ID dataset. The list of search terms serves as the input for querying Wikidata.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract and clean location names</span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>df_temp <span class="ot">&lt;-</span> df_full <span class="sc">|&gt;</span> </span>
@@ -365,8 +355,54 @@ Query Explanation
 [19] "Geneva"              "Amsterdam"          </code></pre>
 </div>
 </div>
+<p>We initialize an empty data frame (<code>id_data</code>) to store the mapping between search terms and their corresponding Wikidata IDs (<code>QIDs</code>). This dataset will be populated iteratively as we query Wikidata for each location name.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>id_data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="st">'search_term'</span> <span class="ot">=</span> <span class="fu">character</span>(), <span class="st">'QID'</span> <span class="ot">=</span> <span class="fu">character</span>(), <span class="at">stringsAsFactors =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>id_data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="st">'search_term'</span> <span class="ot">=</span> <span class="fu">character</span>(), </span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>                      <span class="st">'QID'</span> <span class="ot">=</span> <span class="fu">character</span>(), <span class="at">stringsAsFactors =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The <code>get_wikidata_id()</code> function is designed to query Wikidata and fetch up to three relevant <code>QIDs</code> for each search term. At its core, it filters results to only geogprahic entities (e.g., locations with coordinates) and excludes irrelevant entities such as disambiguation pages (for a full explanation, see the callout box below). The returned <code>QIDs</code> are then concatenated into a comma-separated string.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Query Explanation
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>Entity Search Service</strong>:</p>
+<ul>
+<li>The <code>SERVICE wikibase:mwapi</code> statement is used to perform a search for the <code>search_term</code> in the Wikidata database.</li>
+<li>The <code>mwapi:search</code> parameter specifies the term being searched.</li>
+<li>The <code>mwapi:language</code> parameter limits results to items with labels in the specified language (‘de’ for German).</li>
+</ul>
+<p><strong>Filter by Geographic Coordinates</strong>:</p>
+<ul>
+<li>The query includes the condition <code>?item wdt:P625 ?coordinateLocation</code> that only entities with geographic coordinates are returned. This ensures relevance to physical places.</li>
+</ul>
+<p><strong>Exclude Disambiguation Pages</strong>:</p>
+<ul>
+<li>The <code>MINUS {?item wdt:P31 wd:Q4167410.}</code> clause removes disambiguation pages from the results, as these are not specific entities. This is a more conservative approach, avoiding false positives.</li>
+</ul>
+<p><strong>Group and Rank Results</strong>:</p>
+<ul>
+<li>The <code>GROUP BY ?item</code> clause groups the results by unique items.</li>
+<li>The <code>COUNT(?sitelink)</code> is used to rank entities based on the number of sitelinks (references to the entity across different Wikimedia projects), assuming entities with more sitelinks are more prominent (e.g., larger places).</li>
+<li>The <code>ORDER BY DESC(?sites)</code> ranks results in descending order of sitelinks. This way we can always extract the first element to retrieve the place we are looking for, given the assumption that politicans will talk about the place within their constituency.</li>
+</ul>
+<p><strong>Limit Results</strong>:</p>
+<ul>
+<li>The <code>LIMIT 3</code> clause restricts the results to the top 3 most relevant entities.</li>
+</ul>
+<p><strong>Result Formatting</strong>:</p>
+<ul>
+<li>The function extracts the Wikidata QID (last part of the URL) for each entity and combines them into a comma-separated string for easy use.”</li>
+</ul>
+</div>
+</div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Function to fetch IDs from Wikidata and return as a comma-separated list</span></span>
@@ -396,21 +432,37 @@ Query Explanation
 <span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>  }</span>
 <span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+<p>In the matching step, we then query each search term, extract the <code>IDs</code>, and updates the <code>id_data</code> dataset with the corresponding <code>QIDs</code>. The <code>tryCatch</code> function ensures the process continues even if an error occurs for a specific term. Additionally, a <code>Sys.sleep</code> pause is included between queries to prevent overloading the Wikidata API, making the process robust and efficient for large datasets.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Fetch IDs for missing terms</span></span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="co"># for (term in search_terms[1]) {</span></span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="co">#   print(paste("Processing:", term))</span></span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="co">#   tryCatch({</span></span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="co">#     qid &lt;- get_wikidata_id(term)</span></span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="co">#     id_data &lt;- rbind(id_data, data.frame('search_term' = term, 'QID' = qid, stringsAsFactors = FALSE))</span></span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="co">#   }, error = function(e) {</span></span>
-<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="co">#     message("Error processing term: ", term)</span></span>
-<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="co">#   })</span></span>
-<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a><span class="co">#   Sys.sleep(1)  # Pause to prevent API rate limiting</span></span>
-<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a><span class="co"># }</span></span>
-<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a><span class="co"># </span></span>
-<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a><span class="co"># id_data</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Fetch IDs for the first term</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (term <span class="cf">in</span> search_terms[<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>]) {</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(<span class="fu">paste</span>(<span class="st">"Processing:"</span>, term))</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tryCatch</span>({</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    qid <span class="ot">&lt;-</span> <span class="fu">get_wikidata_id</span>(term)</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    id_data <span class="ot">&lt;-</span> <span class="fu">rbind</span>(id_data, <span class="fu">data.frame</span>(<span class="st">'search_term'</span> <span class="ot">=</span> term, <span class="st">'QID'</span> <span class="ot">=</span> qid, <span class="at">stringsAsFactors =</span> <span class="cn">FALSE</span>))</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>  }, <span class="at">error =</span> <span class="cf">function</span>(e) {</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">message</span>(<span class="st">"Error processing term: "</span>, term)</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>  })</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">Sys.sleep</span>(<span class="dv">1</span>)  <span class="co"># Pause to prevent API rate limiting</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "Processing: Augsburg"</code></pre>
 </div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "Processing: Berlin"</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "Processing: Nordrhein-Westfalen"</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>id_data</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>          search_term                   QID
+1            Augsburg Q2749, Q10415, Q10414
+2              Berlin  Q64, Q152087, Q56037
+3 Nordrhein-Westfalen        Q1198, Q320642</code></pre>
+</div>
+</div>
+<p>Thus, we get a list of potential matches (ranked by the number of sitelinks). Lets inspect the output for our first input: “Augsburg”</p>
 <table class="caption-top table">
 <thead>
 <tr class="header">
@@ -424,7 +476,7 @@ Query Explanation
 <tr class="odd">
 <td>Augsburg</td>
 <td>1</td>
-<td>City of Augsburg (✅)</td>
+<td>City of Augsburg (correct match ✅)</td>
 <td><a href="https://www.wikidata.org/wiki/Q2749">Q2749</a></td>
 </tr>
 <tr class="even">
@@ -445,21 +497,187 @@ Query Explanation
 <h2 class="anchored" data-anchor-id="quality-controls">Quality Controls</h2>
 <section id="filtering-using-wikidata-properties" class="level3">
 <h3 class="anchored" data-anchor-id="filtering-using-wikidata-properties">Filtering using Wikidata Properties</h3>
-<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+<p>Wikidata’s P31 property (“instance of”) allows us to filter entities based on their type, such as cities, administrative regions, or cultural landmarks. Using this property ensures that only entities matching the desired classifications are retained.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Code Explanation: <code>fetch_wikidata_properties</code>
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>How It Works</strong>:</p>
+<ol type="1">
+<li><strong>Wikidata API Integration</strong>:
+<ul>
+<li>The function interacts with the Wikidata API endpoint <code>https://www.wikidata.org/w/api.php</code> to query entity data.</li>
+</ul></li>
+<li><strong>Input Parameters</strong>:
+<ul>
+<li>Takes a vector of QIDs (<code>q_ids</code>) representing the unique Wikidata entity identifiers.</li>
+</ul></li>
+<li><strong>Initialization</strong>:
+<ul>
+<li>Creates an empty tibble (<code>properties_data</code>) to store the results, with columns for QID and the extracted properties.</li>
+</ul></li>
+<li><strong>Iterative Fetching</strong>:
+<ul>
+<li>For each QID in the input:
+<ul>
+<li>Constructs query parameters (<code>action = 'wbgetentities'</code>, <code>format = 'json'</code>, <code>ids = q_id</code>, <code>language = 'de'</code>).</li>
+<li>Sends a GET request to the API.</li>
+<li>Checks if the response is successful (<code>status_code == 200</code>).</li>
+</ul></li>
+</ul></li>
+<li><strong>Data Extraction</strong>:
+<ul>
+<li>Extracts property <code>P31</code> values (e.g., “instance of”) from the JSON response.</li>
+<li>Combines the property values into a comma-separated string.</li>
+</ul></li>
+<li><strong>Error Handling</strong>:
+<ul>
+<li>If the API call fails, the function logs an error message with the QID and the status code. This helps to debug what went wrong.</li>
+</ul></li>
+<li><strong>Return Value</strong>:
+<ul>
+<li>Returns a tibble with two columns:
+<ul>
+<li><code>q_id</code>: The Wikidata QID.</li>
+<li><code>properties</code>: A comma-separated string of property values.</li>
+</ul></li>
+</ul></li>
+</ol>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Add a column to identify valid instances</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>fetch_wikidata_properties <span class="ot">&lt;-</span> <span class="cf">function</span>(q_ids) {</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>  entity_url <span class="ot">&lt;-</span> <span class="st">'https://www.wikidata.org/w/api.php'</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Initialize a dataframe to store results</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>  properties_data <span class="ot">&lt;-</span> <span class="fu">tibble</span>(<span class="at">q_id =</span> <span class="fu">character</span>(), <span class="at">properties =</span> <span class="fu">character</span>())</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (q_id <span class="cf">in</span> q_ids) {</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">print</span>(<span class="fu">paste</span>(<span class="st">"Processing:"</span>, q_id))</span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>    params <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>      <span class="at">action =</span> <span class="st">'wbgetentities'</span>,</span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>      <span class="at">format =</span> <span class="st">'json'</span>,</span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>      <span class="at">ids =</span> q_id,</span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>      <span class="at">language =</span> <span class="st">'de'</span></span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a>    response <span class="ot">&lt;-</span> httr<span class="sc">::</span><span class="fu">GET</span>(entity_url, <span class="at">query =</span> params)</span>
+<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (response<span class="sc">$</span>status_code <span class="sc">==</span> <span class="dv">200</span>) {</span>
+<span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a>      data <span class="ot">&lt;-</span> <span class="fu">fromJSON</span>(<span class="fu">rawToChar</span>(response<span class="sc">$</span>content))</span>
+<span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb15-23"><a href="#cb15-23" aria-hidden="true" tabindex="-1"></a>      <span class="co"># Extract all instances (P31) as a comma-separated string</span></span>
+<span id="cb15-24"><a href="#cb15-24" aria-hidden="true" tabindex="-1"></a>      instances <span class="ot">&lt;-</span> data<span class="sc">$</span>entities[[q_id]]<span class="sc">$</span>claims<span class="sc">$</span>P31<span class="sc">$</span>mainsnak<span class="sc">$</span>datavalue<span class="sc">$</span>value<span class="sc">$</span>id</span>
+<span id="cb15-25"><a href="#cb15-25" aria-hidden="true" tabindex="-1"></a>      instances_list <span class="ot">&lt;-</span> <span class="fu">paste</span>(instances, <span class="at">collapse =</span> <span class="st">", "</span>)</span>
+<span id="cb15-26"><a href="#cb15-26" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb15-27"><a href="#cb15-27" aria-hidden="true" tabindex="-1"></a>      <span class="co"># Add to the results dataframe</span></span>
+<span id="cb15-28"><a href="#cb15-28" aria-hidden="true" tabindex="-1"></a>      properties_data <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(</span>
+<span id="cb15-29"><a href="#cb15-29" aria-hidden="true" tabindex="-1"></a>        properties_data,</span>
+<span id="cb15-30"><a href="#cb15-30" aria-hidden="true" tabindex="-1"></a>        <span class="fu">tibble</span>(<span class="at">q_id =</span> q_id, <span class="at">properties =</span> instances_list)</span>
+<span id="cb15-31"><a href="#cb15-31" aria-hidden="true" tabindex="-1"></a>      )</span>
+<span id="cb15-32"><a href="#cb15-32" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">else</span> {</span>
+<span id="cb15-33"><a href="#cb15-33" aria-hidden="true" tabindex="-1"></a>      <span class="fu">print</span>(<span class="fu">paste</span>(<span class="st">"Failed to fetch data for"</span>, q_id, <span class="st">". Status code:"</span>, response<span class="sc">$</span>status_code))</span>
+<span id="cb15-34"><a href="#cb15-34" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb15-35"><a href="#cb15-35" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb15-36"><a href="#cb15-36" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb15-37"><a href="#cb15-37" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(properties_data)</span>
+<span id="cb15-38"><a href="#cb15-38" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We can then apply the function to extract the properties for each <code>QID</code>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>q_ids <span class="ot">&lt;-</span> id_data <span class="sc">|&gt;</span> </span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">separate_rows</span>(QID, <span class="at">sep =</span> <span class="st">",</span><span class="sc">\\</span><span class="st">s*"</span>) <span class="sc">|&gt;</span>  <span class="co"># Separate multiple QIDs into individual rows</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pull</span>(QID)  <span class="co"># Extract the QID column as a vector for processing</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Fetch properties for the QIDs</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>properties_data <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(<span class="fu">lapply</span>(q_ids, fetch_wikidata_properties))  <span class="co"># Apply the function to each QID and combine results</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "Processing: Q2749"
+[1] "Processing: Q10415"
+[1] "Processing: Q10414"
+[1] "Processing: Q64"
+[1] "Processing: Q152087"
+[1] "Processing: Q56037"
+[1] "Processing: Q1198"
+[1] "Processing: Q320642"</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># View the resulting dataframe</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(properties_data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 8 × 2
+  q_id    properties                                                            
+  &lt;chr&gt;   &lt;chr&gt;                                                                 
+1 Q2749   Q1549591, Q1187811, Q1547289, Q253030, Q42744322, Q19953632, Q8563189…
+2 Q10415  Q85482556                                                             
+3 Q10414  Q85482556                                                             
+4 Q64     Q1901835, Q200250, Q1307779, Q15974307, Q42744322, Q133442, Q11440198…
+5 Q152087 Q1767829, Q62078547, Q45400320, Q115427560                            
+6 Q56037  Q1549591, Q200250, Q108178728, Q129268952, Q1901835                   
+7 Q1198   Q1221156                                                              
+8 Q320642 Q414147                                                               </code></pre>
+</div>
+</div>
+<p>We can see that the item <code>Q2749</code> (the city of Augsburg) has a lot of properties, such as</p>
+<ul>
+<li><code>Q1549591</code>: Indicates that it is a city or urban area.</li>
+<li><code>Q1187811</code>: Indicates that it is part of a specific municipality.</li>
+<li><code>Q253030</code>: Relates to the concept of a settlement or locality.</li>
+<li><code>Q42744322</code>: Suggests it is part of a specific administrative region.</li>
+</ul>
+<p>These properties help us classify and refine the dataset by filtering items based on their relevance and characteristics. For example, we can exclude properties such as <code>Q85482556</code> (rural district of Bavaria) to ensure that only relevant local entities in the study of places, like cities or urban areas, remain (of course, this depends on the reserach question at hand, and can be adapted flexibly).</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Define properties to exclude</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>exclude_properties <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"Q85482556"</span>)  <span class="co"># Example: Remove rural district of Bavaria</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Merge id_data with properties_data</span></span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>merged_data <span class="ot">&lt;-</span> id_data <span class="sc">|&gt;</span> </span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">separate_rows</span>(QID, <span class="at">sep =</span> <span class="st">",</span><span class="sc">\\</span><span class="st">s*"</span>) <span class="sc">|&gt;</span>  <span class="co"># Expand QIDs</span></span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(properties_data, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"QID"</span> <span class="ot">=</span> <span class="st">"q_id"</span>))  <span class="co"># Merge with properties_data</span></span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Filter out items containing excluded properties</span></span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a>filtered_data <span class="ot">&lt;-</span> merged_data <span class="sc">|&gt;</span> </span>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rowwise</span>() <span class="sc">|&gt;</span> </span>
+<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Check if any of the excluded properties exist in the `properties` column</span></span>
+<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">has_excluded_properties =</span> <span class="fu">any</span>(<span class="fu">strsplit</span>(properties, <span class="st">",</span><span class="sc">\\</span><span class="st">s*"</span>)[[<span class="dv">1</span>]] <span class="sc">%in%</span> exclude_properties)</span>
+<span id="cb20-15"><a href="#cb20-15" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span> </span>
+<span id="cb20-16"><a href="#cb20-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span>has_excluded_properties) <span class="sc">|&gt;</span>  <span class="co"># Remove rows with excluded properties</span></span>
+<span id="cb20-17"><a href="#cb20-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()</span>
+<span id="cb20-18"><a href="#cb20-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-19"><a href="#cb20-19" aria-hidden="true" tabindex="-1"></a><span class="co"># Pick the first QID for each search term</span></span>
+<span id="cb20-20"><a href="#cb20-20" aria-hidden="true" tabindex="-1"></a>final_data <span class="ot">&lt;-</span> filtered_data <span class="sc">|&gt;</span> </span>
+<span id="cb20-21"><a href="#cb20-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(search_term) <span class="sc">|&gt;</span> </span>
+<span id="cb20-22"><a href="#cb20-22" aria-hidden="true" tabindex="-1"></a> <span class="fu">slice</span>(<span class="dv">1</span>) <span class="sc">|&gt;</span>  <span class="co"># Select the first row for each search term</span></span>
+<span id="cb20-23"><a href="#cb20-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()</span>
+<span id="cb20-24"><a href="#cb20-24" aria-hidden="true" tabindex="-1"></a><span class="co"># View the final result</span></span>
+<span id="cb20-25"><a href="#cb20-25" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(final_data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 3 × 4
+  search_term         QID   properties                    has_excluded_propert…¹
+  &lt;chr&gt;               &lt;chr&gt; &lt;chr&gt;                         &lt;lgl&gt;                 
+1 Augsburg            Q2749 Q1549591, Q1187811, Q1547289… FALSE                 
+2 Berlin              Q64   Q1901835, Q200250, Q1307779,… FALSE                 
+3 Nordrhein-Westfalen Q1198 Q1221156                      FALSE                 
+# ℹ abbreviated name: ¹​has_excluded_properties</code></pre>
+</div>
+</div>
 </section>
+<section id="outlook" class="level3">
+<h3 class="anchored" data-anchor-id="outlook">Outlook</h3>
+<p>With access to the properties and items for each entry, further checks and refinements become possible. For example, we can extract geographic coordinates for each location and retain only those matches that meet specific criteria, such as a minimum size or those that can be matched to a predefined shapefile. This enables a more precise analysis tailored to the researcher’s goals. In the study by <span class="citation" data-cites="birkenmaierPoliticalGeographyReplication2024">(<a href="#ref-birkenmaierPoliticalGeographyReplication2024" role="doc-biblioref">Birkenmaier et al., 2024</a>)</span>, for instance, places were matched by the constituencies of German politicians, differentiating whether the locations fell within or outside a politician’s electoral district. This type of filtering allows for a focused analysis of geographic relevance and representation.</p>
+<p>In the next step, such enriched geographic data can be combined with textual information to evaluate how places are framed in narratives. This could involve examining how regions are described in speeches, policy documents, or media reports, providing insights into the context and discourse surrounding specific locations. By linking geographic and textual data, this approach supports a more holistic understanding of regional dynamics, opening avenues for studying patterns, trends, and biases in how places are represented.</p>
 </section>
-<section id="heading3" class="level2">
-<h2 class="anchored" data-anchor-id="heading3">Heading3</h2>
-<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-<p><span class="math display">\[
-\cos(\theta) = {\mathbf{A} \cdot \mathbf{B} \over \|\mathbf{A}\| \|\mathbf{B}\|}
-\]</span></p>
-<p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?</p>
-<!-- End -->
-</section>
-<section id="conclusion" class="level2">
-<h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
-<p>Now you know how to do AAAA and BBBB.</p>
 </section>
 <section id="references" class="level2 unnumbered">
 
