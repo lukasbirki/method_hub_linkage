@@ -17,7 +17,6 @@ format:
   ipynb: default
 collapse-callout:
   all: true
-
 ---
 
 ```{r}
@@ -27,15 +26,17 @@ set.seed(721831)
 
 ## Learning Objectives
 
-By the end of this tutorial, you will be able to
+The tutorial at hand provides a pipeline to extract and annotate geographic locations from any source of text. By combining named entity recognition with automatically querying the Wikidata API it enables computational social scientists to smoothly analyse geographic references.
 
-1. Know the basics of Wikidata
-2. Understand how to link entities, in particular places, to their unique identifier (ID) in the Wikidata database
-3. Be able to implement further quality controls
+By the end of this tutorial, you will be able to:
+
+1.  Know the basics of Wikidata and how to query it
+2.  Understand how to link entities, in particular places, to their unique identifier (ID) in the Wikidata database
+3.  Be able to implement steps to increase the quality of the linkage process
 
 ## Target audience
 
-This tutorial is aimed at beginners with some knowledge in R and basic understandings of API queries (no worries, we will do it together 😉)
+This tutorial is aimed at beginners with some knowledge in R and basic understandings of API queries (no worries, we will do it together 😉). 
 
 ## Setting up the computational environment
 
@@ -46,37 +47,41 @@ The following R packages are required:
 require(tidyverse)
 require(WikidataQueryServiceR)
 require(DT)
+require(jsonlite)
 ```
 
-## Duration
+## Duratio
 
-Around 20 min
-
-## Social Science Usecase(s)
-
-This method has been used in a study to examine geographic representation in a mixed-member system [@birkenmaierPoliticalGeographyReplication2024].
-
-
-# Introduction
-
-This tutorial guides computational social scientists through linking geographic entities, specifically places, to their unique identifiers in Wikidata using R. This method enhances geographic data analyses by integrating linked open data sources such as Wikidata.
+This tutorial guides computational social scientists by linking geographic entities mentioned in texts, specifically places, to their unique identifiers in Wikidata using R.
 
 # Know the Basics of Wikidata
 
-[Wikidata](https://www.wikidata.org) is a free and open knowledge base that contains structured data for entities such as places, people, and concepts. Each entry in Wikidata, referred to as an item, is assigned a unique identifier called a `QID`. Wikidata supports collaborative data management and is accessible to both humans and machines.
+[Wikidata](https://www.wikidata.org) is a free and open knowledge base that provides structured data for entries such as places, people, and concepts, used by Wikimedia projects like Wikipedia and others under the CC0 public domain license. Each entry in Wikidata, referred to as an *item*, is assigned a unique identifier known as a `QID`.
 
-To get a better understanding of wikidata, 
+For example, the city of *Berlin* is represented by the ID [Q64](https://www.wikidata.org/wiki/Q64), while the former German chancellor *Angela Merkel* is identified with the ID [Q7174](https://www.wikidata.org/wiki/Q7174). These unique identifiers allow seamless open data integration into computational analyses, enriching studies with detailed and reliable metadata.
 
-- **Entities:** Consist of items (Q-items), each with a unique QID.
-- **Properties:** Attributes of items, such as location coordinates (P625).
-- **Statements:** Data on an item using properties and values.
+To get a better understanding of wikidata,
 
+-   **Entities:** Consist of items (Q-items), each with a unique QID.
+-   **Properties:** Attributes of items, such as location coordinates (P625).
+-   **Statements:** Data on an item using properties and values.
 
-The [Wikidata Query Service](https://query.wikidata.org/) allows users to execute complex queries on the data stored in Wikidata using SPARQL. This powerful tool provides access to all of Wikidata's data, allowing for detailed and specific searches, including geographic locations, historical data, and much more.
+The [Wikidata Query Service](https://query.wikidata.org/) allows users to execute complex queries on the data stored in Wikidata using SPARQL. Thus, all of the knowledge stored in wikidata can dynamically be extracted and saved using specific searches, including geographic locations, historical data, and much more.
 
-To perform a query, users can write and run SPARQL queries directly in the browser-based interface provided by the query service. In R, we can use the package `WikidataQueryServiceR`[@package], a convenient wrapper for the Wikidata Query Service API.
-For instance, if we want to retrieve the list of the most populated countries in the world, we can execute the following query: 
+To perform a query, users can access the Wikidata Query Service API or write and run SPARQL queries directly in the browser-based interface provided by the query service. In R, we can use the package `WikidataQueryServiceR`[@package], a convenient wrapper for the Wikidata Query Service API. For instance, if we want to retrieve the list of the most populated countries in the world, we can execute the following query:
 
+::: {.callout-note collapse="true"}
+### Query Explanation
+
+-   **Specify Output Variables**:
+    -   The `SELECT` statement is used to specify the output variables. In our case we name them `?countryLabel` for the country's name and `?population` for the population value. This statement is always defined before the {}, in which the instance and the entity is defined.
+-   **Filter by Instance**:
+    -   In the first part of the query we filter for entities to include only those that contain the property `wdt:P31` ("instance of") for all countries (`wd:Q6256`) as "countries," ensuring only relevant entities for our case are retrieved.
+-   **Retrieve Population Data**:
+    -   The second part retrieves the value of interest, the population data for each country, by including the property `wdt:P1082` ("population").
+-   **Optional Clauses for Refinement**:
+    -   Finally, we can leverage optional clauses or filters to refine the results further and might include a `SERVICE wikibase:label` statement to ensure labels are returned in a specified language (e.g., English).
+:::
 
 ```{r}
 #| label: fetch-wikidata
@@ -107,21 +112,12 @@ head(results)
 
 
 
-:::{.callout-note collapse='true'}
-### Query Explanation
-
-- first filters entities to include only those entities that contain the property `wdt:P31` ("instance of") for all countries (`wd:Q6256`) as "countries," ensuring only relevant entities are retrieved.
-- then retrieves the population data for each country by including the property `wdt:P1082` ("population").
-- next, it uses the `SELECT` statement to specify the output variables, such as `?countryLabel` for the country's name and `?population` for its population value.
-- finally, the query leverages optional clauses or filters to refine the results further and might include a `SERVICE wikibase:label` block to ensure labels are returned in a specified language (e.g., English).
-:::
-
-
 # Link Entities to Their Unique Identifier in Wikidata
 
 ## Dataset Preparation
 
-We start with a toy dataset containing social media posts and potential location mentions. This data usually comes in that format from named-entity recognition (NER).
+We begin with a sample dataset of social media posts that includes potential location mentions. Typically, we use named-entity recognition (NER) to retrieve data on location mentioning from text. This model predicts the presence of entites in an input text. For an example, see this [Tutorial](https://colab.research.google.com/github/huggingface/notebooks/blob/master/course/en/chapter7/section2_pt.ipynb) on Huggingface.
+
 
 ```{r}
 #| code-fold: TRUE
@@ -133,6 +129,8 @@ library(DT)
 # Sample dataset
 library(tibble)
 
+
+#We manually create the toy dataset
 df_full <- tibble(
   text = c(
     "I recently visited Augsburg, and I must say, it's truly a city that values community spirit.",
@@ -189,6 +187,7 @@ datatable(
 
 # Data Linkage of Places
 
+We start by processing the dataset (`df_full`) to extract and clean location names. The `separate_rows()` function splits multiple locations listed in one cell into separate rows, while additional transformations remove trailing dots and empty rows. The result is a clean list of location names ready for further processing. From the cleaned dataset (`df_temp`), we extract a unique list of location names using the `unique()` function. This ensures that only distinct location names are processed when creating the ID dataset. The list of search terms serves as the input for querying Wikidata. 
 ```{r}
 # Extract and clean location names
 df_temp <- df_full |> 
@@ -201,10 +200,47 @@ search_terms <- unique(df_temp$locations)
 search_terms
 ```
 
+We initialize an empty data frame (`id_data`) to store the mapping between search terms and their corresponding Wikidata IDs (`QIDs`). This dataset will be populated iteratively as we query Wikidata for each location name.
 
 ```{r}
-id_data <- data.frame('search_term' = character(), 'QID' = character(), stringsAsFactors = FALSE)
+id_data <- data.frame('search_term' = character(), 
+                      'QID' = character(), stringsAsFactors = FALSE)
 ```
+
+The `get_wikidata_id()` function is designed to query Wikidata and fetch up to three relevant `QIDs` for each search term. 
+At its core, it filters results to only geogprahic entities (e.g., locations with coordinates) and excludes irrelevant entities such as disambiguation pages (for a full explanation, see the callout box below). The returned `QIDs` are then concatenated into a comma-separated string.
+
+::: {.callout-note collapse="true"}
+### Query Explanation
+
+**Entity Search Service**:
+
+-   The `SERVICE wikibase:mwapi` statement is used to perform a search for the `search_term` in the Wikidata database.
+-   The `mwapi:search` parameter specifies the term being searched.
+-   The `mwapi:language` parameter limits results to items with labels in the specified language ('de' for German).
+
+**Filter by Geographic Coordinates**:
+
+-   The query includes the condition `?item wdt:P625 ?coordinateLocation` that only entities with geographic coordinates are returned. This ensures relevance to physical places.
+
+**Exclude Disambiguation Pages**:
+
+-   The `MINUS {?item wdt:P31 wd:Q4167410.}` clause removes disambiguation pages from the results, as these are not specific entities. This is a more conservative approach, avoiding false positives.
+
+**Group and Rank Results**:
+
+-   The `GROUP BY ?item` clause groups the results by unique items.
+-   The `COUNT(?sitelink)` is used to rank entities based on the number of sitelinks (references to the entity across different Wikimedia projects), assuming entities with more sitelinks are more prominent (e.g., larger places).
+-   The `ORDER BY DESC(?sites)` ranks results in descending order of sitelinks. This way we can always extract the first element to retrieve the place we are looking for, given the assumption that politicans will talk about the place within their constituency. 
+
+**Limit Results**:
+
+-   The `LIMIT 3` clause restricts the results to the top 3 most relevant entities.
+
+**Result Formatting**:
+
+-   The function extracts the Wikidata QID (last part of the URL) for each entity and combines them into a comma-separated string for easy use."
+:::
 
 ```{r}
 # Function to fetch IDs from Wikidata and return as a comma-separated list
@@ -236,54 +272,178 @@ SELECT ?item (COUNT(?sitelink) AS ?sites) WHERE {
 
 ```
 
+
+In the matching step, we then query each search term, extract the `IDs`, and updates the `id_data` dataset with the corresponding `QIDs`. The `tryCatch` function ensures the process continues even if an error occurs for a specific term. Additionally, a `Sys.sleep` pause is included between queries to prevent overloading the Wikidata API, making the process robust and efficient for large datasets.
+
 ```{r}
 #| message: false
 
-# Fetch IDs for missing terms
-# for (term in search_terms[1]) {
-#   print(paste("Processing:", term))
-#   tryCatch({
-#     qid <- get_wikidata_id(term)
-#     id_data <- rbind(id_data, data.frame('search_term' = term, 'QID' = qid, stringsAsFactors = FALSE))
-#   }, error = function(e) {
-#     message("Error processing term: ", term)
-#   })
-#   Sys.sleep(1)  # Pause to prevent API rate limiting
-# }
-# 
-# id_data
+#Fetch IDs for the first term
+for (term in search_terms[1:3]) {
+  print(paste("Processing:", term))
+  tryCatch({
+    qid <- get_wikidata_id(term)
+    id_data <- rbind(id_data, data.frame('search_term' = term, 'QID' = qid, stringsAsFactors = FALSE))
+  }, error = function(e) {
+    message("Error processing term: ", term)
+  })
+  Sys.sleep(1)  # Pause to prevent API rate limiting
+}
+
+id_data
 ```
 
-| Search Term | Most Likely Match| Actual Place                | QID and Link                                                                                    |
-|-------------|-----------------------------|-----------------------------------------------------------------------------------------------|-------------------|
-| Augsburg    | 1| City of Augsburg (✅)       | [Q2749](https://www.wikidata.org/wiki/Q2749)                                                  |         |
-| Augsburg    | 2 |Aichach-Friedberg           | [Q10415](https://www.wikidata.org/wiki/Q10415)                                                                |
-| Augsburg    | 3| District Augsburg (Landkreis) | [Q10414](https://www.wikidata.org/wiki/Q10414)                                                              |
+Thus, we get a list of potential matches (ranked by the number of sitelinks). Lets inspect the output for our first input: "Augsburg"
 
+| Search Term | Most Likely Match | Actual Place | QID and Link |
+|-----------------|-----------------|----------------------|-----------------|
+| Augsburg | 1 | City of Augsburg (correct match ✅) | [Q2749](https://www.wikidata.org/wiki/Q2749) |
+| Augsburg | 2 | Aichach-Friedberg | [Q10415](https://www.wikidata.org/wiki/Q10415) |
+| Augsburg | 3 | District Augsburg (Landkreis) | [Q10414](https://www.wikidata.org/wiki/Q10414) |
 
 ## Quality Controls
 
 ### Filtering using Wikidata Properties
 
+Wikidata's P31 property ("instance of") allows us to filter entities based on their type, such as cities, administrative regions, or cultural landmarks. Using this property ensures that only entities matching the desired classifications are retained.
+
+::: {.callout-note collapse="true"}
+### Code Explanation: `fetch_wikidata_properties`
+
+**How It Works**:
+
+1. **Wikidata API Integration**:
+   - The function interacts with the Wikidata API endpoint `https://www.wikidata.org/w/api.php` to query entity data.
+
+2. **Input Parameters**:
+   - Takes a vector of QIDs (`q_ids`) representing the unique Wikidata entity identifiers.
+
+3. **Initialization**:
+   - Creates an empty tibble (`properties_data`) to store the results, with columns for QID and the extracted properties.
+
+4. **Iterative Fetching**:
+   - For each QID in the input:
+     - Constructs query parameters (`action = 'wbgetentities'`, `format = 'json'`, `ids = q_id`, `language = 'de'`).
+     - Sends a GET request to the API.
+     - Checks if the response is successful (`status_code == 200`).
+
+5. **Data Extraction**:
+   - Extracts property `P31` values (e.g., "instance of") from the JSON response.
+   - Combines the property values into a comma-separated string.
+
+6. **Error Handling**:
+   - If the API call fails, the function logs an error message with the QID and the status code. This helps to debug what went wrong.
+
+7. **Return Value**:
+   - Returns a tibble with two columns:
+     - `q_id`: The Wikidata QID.
+     - `properties`: A comma-separated string of property values.
+     
+:::
+
+```{r}
+# Add a column to identify valid instances
+fetch_wikidata_properties <- function(q_ids) {
+  entity_url <- 'https://www.wikidata.org/w/api.php'
+  
+  # Initialize a dataframe to store results
+  properties_data <- tibble(q_id = character(), properties = character())
+  
+  for (q_id in q_ids) {
+    print(paste("Processing:", q_id))
+    
+    params <- list(
+      action = 'wbgetentities',
+      format = 'json',
+      ids = q_id,
+      language = 'de'
+    )
+    
+    response <- httr::GET(entity_url, query = params)
+    
+    if (response$status_code == 200) {
+      data <- fromJSON(rawToChar(response$content))
+      
+      # Extract all instances (P31) as a comma-separated string
+      instances <- data$entities[[q_id]]$claims$P31$mainsnak$datavalue$value$id
+      instances_list <- paste(instances, collapse = ", ")
+      
+      # Add to the results dataframe
+      properties_data <- bind_rows(
+        properties_data,
+        tibble(q_id = q_id, properties = instances_list)
+      )
+    } else {
+      print(paste("Failed to fetch data for", q_id, ". Status code:", response$status_code))
+    }
+  }
+  
+  return(properties_data)
+}
 
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+```
 
-## Heading3
+We can then apply the function to extract the properties for each `QID`.
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+```{r}
+#| message: false
 
-$$
-\cos(\theta) = {\mathbf{A} \cdot \mathbf{B} \over \|\mathbf{A}\| \|\mathbf{B}\|}
-$$
+q_ids <- id_data |> 
+  separate_rows(QID, sep = ",\\s*") |>  # Separate multiple QIDs into individual rows
+  pull(QID)  # Extract the QID column as a vector for processing
 
-Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?
+# Fetch properties for the QIDs
+properties_data <- bind_rows(lapply(q_ids, fetch_wikidata_properties))  # Apply the function to each QID and combine results
 
-<!-- End -->
+# View the resulting dataframe
+print(properties_data)
 
-## Conclusion
+```
 
-Now you know how to do AAAA and BBBB.
+We can see that the item `Q2749` (the city of Augsburg) has a lot of properties, such as
+
+-   `Q1549591`: Indicates that it is a city or urban area.
+-   `Q1187811`: Indicates that it is part of a specific municipality.
+-   `Q253030`: Relates to the concept of a settlement or locality.
+-   `Q42744322`: Suggests it is part of a specific administrative region.
+
+These properties help us classify and refine the dataset by filtering items based on their relevance and characteristics. For example, we can exclude properties such as `Q85482556` (rural district of Bavaria) to ensure that only relevant local entities in the study of places, like cities or urban areas, remain (of course, this depends on the reserach question at hand, and can be adapted flexibly).
+
+```{r}
+# Define properties to exclude
+exclude_properties <- c("Q85482556")  # Example: Remove rural district of Bavaria
+
+# Merge id_data with properties_data
+merged_data <- id_data |> 
+  separate_rows(QID, sep = ",\\s*") |>  # Expand QIDs
+  left_join(properties_data, by = c("QID" = "q_id"))  # Merge with properties_data
+
+# Filter out items containing excluded properties
+filtered_data <- merged_data |> 
+  rowwise() |> 
+  mutate(
+    # Check if any of the excluded properties exist in the `properties` column
+    has_excluded_properties = any(strsplit(properties, ",\\s*")[[1]] %in% exclude_properties)
+  ) |> 
+  filter(!has_excluded_properties) |>  # Remove rows with excluded properties
+  ungroup()
+
+# Pick the first QID for each search term
+final_data <- filtered_data |> 
+  group_by(search_term) |> 
+ slice(1) |>  # Select the first row for each search term
+  ungroup()
+# View the final result
+print(final_data)
+
+
+```
+
+### Outlook
+
+With access to the properties and items for each entry, further checks and refinements become possible. For example, we can extract geographic coordinates for each location and retain only those matches that meet specific criteria, such as a minimum size or those that can be matched to a predefined shapefile. This enables a more precise analysis tailored to the researcher’s goals. In the study by [@birkenmaierPoliticalGeographyReplication2024], for instance, places were matched by the constituencies of German politicians, differentiating whether the locations fell within or outside a politician’s electoral district. This type of filtering allows for a focused analysis of geographic relevance and representation.
+
+In the next step, such enriched geographic data can be combined with textual information to evaluate how places are framed in narratives. This could involve examining how regions are described in speeches, policy documents, or media reports, providing insights into the context and discourse surrounding specific locations. By linking geographic and textual data, this approach supports a more holistic understanding of regional dynamics, opening avenues for studying patterns, trends, and biases in how places are represented.
 
 ## References
-
