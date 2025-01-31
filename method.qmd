@@ -56,9 +56,18 @@ require(jsonlite)
 
 ## Duratio
 
+Around 20 min
+
+## Social Science Usecase(s)
+
+This method has been used in previous studies to evaluate how the legislatory system affects geographical representation [@birkenmaierPoliticalGeographyReplication2024].
+
+
+# Introduction
+
 This tutorial guides computational social scientists by linking geographic entities mentioned in texts, specifically places, to their unique identifiers in Wikidata using R.
 
-# Know the Basics of Wikidata
+### Know the Basics of Wikidata
 
 [Wikidata](https://www.wikidata.org) is a free and open knowledge base that provides structured data for entries such as places, people, and concepts, used by Wikimedia projects like Wikipedia and others under the CC0 public domain license. Each entry in Wikidata, referred to as an *item*, is assigned a unique identifier known as a `QID`.
 
