@@ -459,4 +459,8 @@ With access to the properties and items for each entry, further checks and refin
 
 In the next step, such enriched geographic data can be combined with textual information to evaluate how places are framed in narratives. This could involve examining how regions are described in speeches, policy documents, or media reports, providing insights into the context and discourse surrounding specific locations. By linking geographic and textual data, this approach supports a more holistic understanding of regional dynamics, opening avenues for studying patterns, trends, and biases in how places are represented.
 
+
+This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License (CC BY-NC 4.0).
+
+
 ## References

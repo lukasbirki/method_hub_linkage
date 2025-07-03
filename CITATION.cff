@@ -1,0 +1,26 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: Linking Entities to Wikidata Database
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Lukas
+    family-names: Birkenmaier
+    email: lukas.birkenmaier@outlook.de
+    affiliation: GESIS
+    orcid: 'https://orcid.org/0009-0006-1538-0589'
+abstract: >+
+  The tutorial at hand provides a pipeline to extract and
+  annotate geographic locations from any source of text. By
+  combining named entity recognition with automatically
+  querying the Wikidata API it enables computational social
+  scientists to smoothly analyse geographic references.
+
+keywords:
+  - data linkage
+  - wikipdata
+license: CC-BY-NC-4.0
