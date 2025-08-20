@@ -27,6 +27,12 @@ echo
 # install required python packages
 python3 -m pip install jupyterlab-quarto
 
+# disable renv on binder
+rm .Rprofile
+
+# restore the renv library to the main library
+R -e "options(renv.config.pak.enabled = TRUE); renv::restore(lockfile = \"renv.lock\", library = .Library)"
+
 echo
 echo Completed
 echo
