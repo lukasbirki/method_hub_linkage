@@ -1,1 +1,1 @@
-install.packages(c("renv", "pak", "markdown"))
+install.packages("renv")
