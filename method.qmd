@@ -83,7 +83,7 @@ The [Wikidata Query Service](https://query.wikidata.org/) allows users to execut
 
 To perform a query, users can access the Wikidata Query Service API or write and run SPARQL queries directly in the browser-based interface provided by the query service. In R, we can use the package `WikidataQueryServiceR`[@package], a convenient wrapper for the Wikidata Query Service API. For instance, if we want to retrieve the list of the most populated countries in the world, we can execute the following query:
 
-::: {.callout-note collapse="true"}
+::: {.callout-note}
 ### Query Explanation
 
 -   **Specify Output Variables**:
@@ -223,7 +223,7 @@ id_data <- data.frame('search_term' = character(),
 The `get_wikidata_id()` function is designed to query Wikidata and fetch up to three relevant `QIDs` for each search term. 
 At its core, it filters results to only geogprahic entities (e.g., locations with coordinates) and excludes irrelevant entities such as disambiguation pages (for a full explanation, see the callout box below). The returned `QIDs` are then concatenated into a comma-separated string.
 
-::: {.callout-note collapse="true"}
+::: {.callout-note}
 ### Query Explanation
 
 **Entity Search Service**:
@@ -320,7 +320,7 @@ Thus, we get a list of potential matches (ranked by the number of sitelinks). Le
 
 Wikidata's P31 property ("instance of") allows us to filter entities based on their type, such as cities, administrative regions, or cultural landmarks. Using this property ensures that only entities matching the desired classifications are retained.
 
-::: {.callout-note collapse="true"}
+::: {.callout-note}
 ### Code Explanation: `fetch_wikidata_properties`
 
 **How It Works**:
