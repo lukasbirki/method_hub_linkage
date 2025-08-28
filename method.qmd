@@ -54,7 +54,7 @@ require(DT)
 require(jsonlite)
 ```
 
-## Duratio
+## Duration
 
 Around 20 min
 
